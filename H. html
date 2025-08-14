@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartCut.Pro - Калькулятор раскроя с учетом ширины реза</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1a3a6c;
+            --secondary: #2a5a8c;
+            --accent: #4CAF50;
+            --dark: #0d1a30;
+            --light: #f0f5ff;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --gray: #a0a0a0;
+            --kerf-color: #ff6b6b;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--dark), var(--primary), var(--secondary));
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: rgba(255, 255, 255, 0.97);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            padding: 25px 30px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 40%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(26, 58, 108, 0.1), rgba(42, 90, 140, 0.15));
+            clip-path: polygon(100% 0, 0 0, 100% 100%);
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-icon {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            width: 65px;
+            height: 65px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .logo-text h1 {
+            color: var(--primary);
+            font-size: 2.4rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+        
+        .logo-text p {
+            color: var(--secondary);
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 25px 0;
+            justify-content: center;
+        }
+        
+        .feature {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 20px;
+            width: 320px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .feature:hover {
+            transform: translateY(-7px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .feature h3 {
+            color: var(--primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.25rem;
+        }
+        
+        .feature-icon {
+            background: var(--secondary);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+        }
+        
+        .feature p {
+            color: #555;
+            font-size: 0.95rem;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 35px;
+        }
+        
+        .input-section {
+            background: rgba(255, 255, 255, 0.97);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            flex: 1;
+            min-width: 320px;
+        }
+        
+        .section-title {
+            color: var(--primary);
+            font-size: 1.6rem;
+            margin-bottom: 25px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .section-title i {
+            background: var(--secondary);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .kerf-input {
+            background: var(--light);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .kerf-input label {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+        
+        .kerf-input input {
+            width: 120px;
+            padding: 12px 15px;
+            border: 2px solid var(--secondary);
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .kerf-visual {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .kerf-line {
+            width: 40px;
+            height: 4px;
+            background: var(--kerf-color);
+            border-radius: 2px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        th, td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        th {
+            background-color: var(--light);
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+        
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d0d0d0;
+            border-radius: 8px;
+            font-size: 1.05rem;
+            transition: all 0.2s;
+        }
+        
+        input[type="number"]:focus, input[type="text"]:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(42, 90, 140, 0.2);
+            outline: none;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.05rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn:hover {
+            background: linear-gradient(135deg, var(--secondary), #3a7aac);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .btn i {
+            font-size: 1.1rem;
+        }
+        
+        .add-btn {
+            background: linear-gradient(135deg, #2a8c5a, #3aac7a);
+            margin-top: 10px;
+        }
+        
+        .add-btn:hover {
+            background: linear-gradient(135deg, #3aac7a, #4acc9a);
+        }
+        
+        .calculate-btn {
+            background: linear-gradient(135deg, #8c2a5a, #ac3a7a);
+            width: 100%;
+            padding: 16px;
+            font-size: 1.25rem;
+            justify-content: center;
+            margin-top: 25px;
+        }
+        
+        .calculate-btn:hover {
+            background: linear-gradient(135deg, #ac3a7a, #cc4a9a);
+        }
+        
+        .visualization-section {
+            background: rgba(255, 255, 255, 0.97);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            flex: 1.5;
+            min-width: 320px;
+        }
+        
+        .stock-visualization {
+            margin: 30px 0;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+        
+        .stock-header {
+            background: var(--light);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 1.1rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .visual-bar {
+            height: 55px;
+            background: #f5f5f5;
+            border-radius: 0;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        
+        .segment {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 15px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border-right: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .segment:hover {
+            filter: brightness(1.1);
+            z-index: 10;
+            box-shadow: inset 0 0 0 2px white;
+        }
+        
+        .segment::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(rgba(255,255,255,0.15), rgba(0,0,0,0.15));
+        }
+        
+        .kerf-segment {
+            background: var(--kerf-color);
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .kerf-segment::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                45deg,
+                rgba(0, 0, 0, 0.1),
+                rgba(0, 0, 0, 0.1) 2px,
+                rgba(0, 0, 0, 0.15) 2px,
+                rgba(0, 0, 0, 0.15) 4px
+            );
+        }
+        
+        .remainder {
+            background: #a0a0a0;
+            color: #333;
+            text-shadow: none;
+        }
+        
+        .stats {
+            background: #f9f9f9;
+            padding: 12px 20px;
+            font-size: 0.95rem;
+            color: #444;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .stat-item i {
+            color: var(--secondary);
+        }
+        
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 30px 0;
+            padding: 20px;
+            background: var(--light);
+            border-radius: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95rem;
+        }
+        
+        .legend-color {
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .kerf-legend {
+            border: 1px dashed #ff6b6b;
+        }
+        
+        .faq {
+            background: rgba(255, 255, 255, 0.97);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            margin-top: 30px;
+        }
+        
+        .faq h2 {
+            color: var(--primary);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.8rem;
+        }
+        
+        .question {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .question:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .question h3 {
+            color: var(--secondary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.3rem;
+        }
+        
+        .notification {
+            background: #fff9db;
+            border-left: 4px solid #f59f00;
+            padding: 18px;
+            border-radius: 0 8px 8px 0;
+            margin: 25px 0;
+            color: #5c3c00;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            font-size: 1.05rem;
+        }
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 25px;
+            background: linear-gradient(135deg, #f0f5ff, #e6f0ff);
+            padding: 20px;
+            border-radius: 12px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+        
+        @media (max-width: 1100px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .visual-bar {
+                height: 45px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .logo-container {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .features {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .feature {
+                width: 100%;
+            }
+            
+            .legend {
+                flex-direction: column;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-container">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-cut"></i>
+                    </div>
+                    <div class="logo-text">
+                        <h1>SmartCut.Pro</h1>
+                        <p>Расчет раскроя с учетом ширины реза</p>
+                    </div>
+                </div>
+                <div class="controls">
+                    <button class="btn"><i class="fas fa-history"></i> История</button>
+                    <button class="btn"><i class="fas fa-cog"></i> Настройки</button>
+                </div>
+            </div>
+            
+            <div class="features">
+                <div class="feature">
+                    <h3><span class="feature-icon"><i class="fas fa-cut"></i></span> Учет ширины реза</h3>
+                    <p>Автоматический расчет потерь материала на каждый рез (по умолчанию 8 мм)</p>
+                </div>
+                <div class="feature">
+                    <h3><span class="feature-icon"><i class="fas fa-boxes"></i></span> Оптимизация остатков</h3>
+                    <p>Учет полезных остатков для минимизации отходов</p>
+                </div>
+                <div class="feature">
+                    <h3><span class="feature-icon"><i class="fas fa-chart-line"></i></span> Визуализация</h3>
+                    <p>Наглядное представление раскроя с выделением резов</p>
+                </div>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <div class="input-section">
+                <h2 class="section-title"><i class="fas fa-edit"></i> Ввод данных</h2>
+                
+                <div class="kerf-input">
+                    <label for="kerfWidth"><i class="fas fa-cut"></i> Ширина реза (ножа):</label>
+                    <input type="number" id="kerfWidth" value="8" min="0" max="20" step="0.5">
+                    <span>мм</span>
+                    <div class="kerf-visual">
+                        <div class="kerf-line"></div>
+                        <span>Потери материала при каждом разрезе</span>
+                    </div>
+                </div>
+                
+                <h3><i class="fas fa-boxes"></i> Заготовки / Склад:</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>№</th>
+                            <th>ДЛИНА (мм)</th>
+                            <th>КОЛ-ВО</th>
+                            <th>НАЗВАНИЕ</th>
+                            <th>ПРИОРИТЕТ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td><input type="number" value="3990" min="1"></td>
+                            <td><input type="text" placeholder="∞" value="∞"></td>
+                            <td><input type="text" value="Основная"></td>
+                            <td><input type="number" value="1" min="1"></td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td><input type="number" value="2500" min="1"></td>
+                            <td><input type="number" value="5" min="1"></td>
+                            <td><input type="text" value="Дополнительная"></td>
+                            <td><input type="number" value="2" min="1"></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button class="btn add-btn"><i class="fas fa-plus"></i> ДОБАВИТЬ ЗАГОТОВКУ</button>
+                
+                <h3 style="margin-top: 30px;"><i class="fas fa-ruler"></i> Отрезки:</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>№</th>
+                            <th>ДЛИНА (мм)</th>
+                            <th>КОЛ-ВО</th>
+                            <th>НАЗВАНИЕ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td><input type="number" value="1200" min="1"></td>
+                            <td><input type="number" value="3" min="1"></td>
+                            <td><input type="text" value="Деталь A"></td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td><input type="number" value="800" min="1"></td>
+                            <td><input type="number" value="4" min="1"></td>
+                            <td><input type="text" value="Деталь B"></td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td><input type="number" value="1500" min="1"></td>
+                            <td><input type="number" value="2" min="1"></td>
+                            <td><input type="text" value="Деталь C"></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button class="btn add-btn"><i class="fas fa-plus"></i> ДОБАВИТЬ ОТРЕЗОК</button>
+                
+                <button class="btn calculate-btn" id="calculateBtn">
+                    <i class="fas fa-calculator"></i> РАССЧИТАТЬ РАСКРОЙ С УЧЕТОМ РЕЗА
+                </button>
+            </div>
+            
+            <div class="visualization-section">
+                <h2 class="section-title"><i class="fas fa-chart-bar"></i> Визуализация раскроя</h2>
+                
+                <div class="notification">
+                    <i class="fas fa-info-circle"></i> 
+                    <div>
+                        <strong>Ширина реза: 8 мм</strong> - учитывается при каждом разрезе материала.
+                        Красные полосы обозначают потери материала на рез. Наведите курсор на сегменты для деталей.
+                    </div>
+                </div>
+                
+                <div id="visualizationResults">
+                    <!-- Заготовка 1 -->
+                    <div class="stock-visualization">
+                        <div class="stock-header">
+                            <span>Заготовка #1: 3990 мм (Основная)</span>
+                            <span>Приоритет: 1</span>
+                        </div>
+                        <div class="visual-bar">
+                            <div class="segment" style="width: 30.1%; background-color: #4CAF50;" 
+                                 title="Деталь A: 1200 мм (Приоритет: Высокий)">1200</div>
+                            <div class="kerf-segment" style="width: 0.2%;" title="Потери на рез: 8 мм">8</div>
+                            <div class="segment" style="width: 20.1%; background-color: #8BC34A;" 
+                                 title="Деталь B: 800 мм (Приоритет: Средний)">800</div>
+                            <div class="kerf-segment" style="width: 0.2%;" title="Потери на рез: 8 мм">8</div>
+                            <div class="segment" style="width: 37.8%; background-color: #2196F3;" 
+                                 title="Деталь C: 1500 мм (Приоритет: Низкий)">1500</div>
+                            <div class="kerf-segment" style="width: 0.2%;" title="Потери на рез: 8 мм">8</div>
+                            <div class="remainder segment" style="width: 11.4%;" 
+                                 title="Полезный остаток: 466 мм">466</div>
+                        </div>
+                        <div class="stats">
+                            <div class="stat-item">
+                                <i class="fas fa-ruler"></i> Использовано: 3524 мм (88.3%)
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-cut"></i> Потери на рез: 24 мм (3 реза)
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-box"></i> Остаток: 466 мм (пригоден)
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Заготовка 2 -->
+                    <div class="stock-visualization">
+                        <div class="stock-header">
+                            <span>Заготовка #2: 2500 мм (Дополнительная)</span>
+                            <span>Приоритет: 2</span>
+                        </div>
+                        <div class="visual-bar">
+                            <div class="segment" style="width: 30%; background-color: #4CAF50;" 
+                                 title="Деталь A: 1200 мм (Приоритет: Высокий)">1200</div>
+                            <div class="kerf-segment" style="width: 0.3%;" title="Потери на рез: 8 мм">8</div>
+                            <div class="segment" style="width: 32.1%; background-color: #FF9800;" 
+                                 title="Деталь C: 1250 мм (Приоритет: Низкий)">1250</div>
+                            <div class="kerf-segment" style="width: 0.3%;" title="Потери на рез: 8 мм">8</div>
+                            <div class="remainder segment" style="width: 37.3%;" 
+                                 title="Полезный остаток: 1026 мм">1026</div>
+                        </div>
+                        <div class="stats">
+                            <div class="stat-item">
+                                <i class="fas fa-ruler"></i> Использовано: 2458 мм (98.3%)
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-cut"></i> Потери на рез: 16 мм (2 реза)
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-box"></i> Остаток: 1026 мм (пригоден)
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Заготовка 3 -->
+                    <div class="stock-visualization">
+                        <div class="stock-header">
+                            <span>Заготовка #3: 2500 мм (Дополнительная)</span>
+                            <span>Приоритет: 2</span>
+                        </div>
+                        <div class="visual-bar">
+                            <div class="segment" style="width: 32%; background-color: #8BC34A;" 
+                                 title="Деталь B: 800 мм (Приоритет: Средний)">800</div>
+                            <div class="kerf-segment" style="width: 0.3%;" title="Потери на рез: 8 мм">8</div>
+                            <div class="segment" style="width: 32%; background-color: #8BC34A;" 
+                                 title="Деталь B: 800 мм (Приоритет: Средний)">800</div>
+                            <div class="kerf-segment" style="width: 0.3%;" title="Потери на рез: 8 мм">8</div>
+                            <div class="segment" style="width: 32%; background-color: #8BC34A;" 
+                                 title="Деталь B: 800 мм (Приоритет: Средний)">800</div>
+                            <div class="kerf-segment" style="width: 0.3%;" title="Потери на рез: 8 мм">8</div>
+                            <div class="remainder segment" style="width: 3.1%;" 
+                                 title="Полезный остаток: 76 мм">76</div>
+                        </div>
+                        <div class="stats">
+                            <div class="stat-item">
+                                <i class="fas fa-ruler"></i> Использовано: 2424 мм (97.0%)
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-cut"></i> Потери на рез: 24 мм (3 реза)
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-box"></i> Остаток: 76 мм (незначительный)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #4CAF50;"></div>
+                        <span>Деталь A (1200 мм)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #8BC34A;"></div>
+                        <span>Деталь B (800 мм)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #2196F3;"></div>
+                        <span>Деталь C (1500 мм)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #FF9800;"></div>
+                        <span>Деталь C (1250 мм)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color kerf-legend" style="background-color: #ff6b6b;"></div>
+                        <span>Потери на рез (8 мм)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #a0a0a0;"></div>
+                        <span>Полезный остаток</span>
+                    </div>
+                </div>
+                
+                <div class="summary-stats">
+                    <div class="stat-card">
+                        <h3><i class="fas fa-percentage"></i> Общая экономия</h3>
+                        <div class="stat-value">94.7%</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3><i class="fas fa-cut"></i> Общие потери на рез</h3>
+                        <div class="stat-value">64 мм</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3><i class="fas fa-box"></i> Общий полезный остаток</h3>
+                        <div class="stat-value">1568 мм</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3><i class="fas fa-coins"></i> Экономия стоимости</h3>
+                        <div class="stat-value">18.5%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="faq">
+            <h2><i class="fas fa-question-circle"></i> Часто задаваемые вопросы</h2>
+            
+            <div class="question">
+                <h3><i class="fas fa-cut"></i> Как учитывается ширина реза в расчетах?</h3>
+                <p>При каждом разрезе материала теряется определенное количество материала, равное ширине режущего инструмента (по умолчанию 8 мм). В калькуляторе SmartCut.Pro эта величина автоматически вычитается из общей длины заготовки при каждом разрезе. Это позволяет получить точные данные о реальном расходе материала и полезных остатках.</p>
+            </div>
+            
+            <div class="question">
+                <h3><i class="fas fa-ruler-combined"></i> Как минимизировать потери на рез?</h3>
+                <p>Для минимизации потерь рекомендуем:</p>
+                <ul style="padding-left: 20px; margin-top: 10px;">
+                    <li>Группировать детали одного размера для сокращения количества резов</li>
+                    <li>Использовать заготовки оптимальной длины</li>
+                    <li>Настраивать приоритет заготовок для более эффективного раскроя</li>
+                    <li>Сохранять полезные остатки для будущих работ</li>
+                </ul>
+            </div>
+            
+            <div class="question">
+                <h3><i class="fas fa-calculator"></i> Как программа рассчитывает оптимальный раскрой?</h3>
+                <p>SmartCut.Pro использует продвинутый алгоритм, который учитывает:</p>
+                <ul style="padding-left: 20px; margin-top: 10px;">
+                    <li>Ширину реза для каждого разрезаемого материала</li>
+                    <li>Приоритет использования заготовок</li>
+                    <li>Минимально допустимый размер полезного остатка</li>
+                    <li>Количество деталей каждого типа</li>
+                </ul>
+                <p>Алгоритм стремится минимизировать общие отходы, включая потери на рез и неиспользуемые остатки.</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const kerfInput = document.getElementById('kerfWidth');
+            const calculateBtn = document.getElementById('calculateBtn');
+            
+            // Обновление визуализации при изменении ширины реза
+            kerfInput.addEventListener('change', function() {
+                const kerfValue = kerfInput.value;
+                document.querySelector('.notification strong').textContent = 
+                    `Ширина реза: ${kerfValue} мм`;
+                
+                // В реальном приложении здесь будет пересчет
+                alert(`Ширина реза изменена на ${kerfValue} мм. Нажмите "Рассчитать раскрой" для обновления результатов.`);
+            });
+            
+            // Обработчик кнопки расчета
+            calculateBtn.addEventListener('click', function() {
+                const kerf = parseFloat(kerfInput.value) || 0;
+                
+                // Показать уведомление
+                const notification = document.querySelector('.notification');
+                notification.innerHTML = `
+                    <i class="fas fa-sync-alt fa-spin"></i>
+                    <div>
+                        <strong>Идет расчет с шириной реза ${kerf} мм...</strong>
+                        Пожалуйста, подождите.
+                    </div>
+                `;
+                
+                // Имитация расчета
+                setTimeout(() => {
+                    notification.innerHTML = `
+                        <i class="fas fa-check-circle" style="color: #2ecc71;"></i>
+                        <div>
+                            <strong>Расчет завершен с шириной реза ${kerf} мм!</strong>
+                            Результаты обновлены с учетом потерь на рез.
+                        </div>
+                    `;
+                    
+                    // В реальном приложении здесь будет обновление визуализации
+                    // на основе новых расчетов с учетом ширины реза
+                }, 1500);
+            });
+            
+            // Обработчики для добавления строк
+            document.querySelectorAll('.add-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    alert('Добавлена новая строка. В реальном приложении здесь будет функционал добавления.');
+                });
+            });
+            
+            // Обработчики для сегментов визуализации
+            document.querySelectorAll('.segment').forEach(segment => {
+                segment.addEventListener('click', function() {
+                    if (this.classList.contains('remainder')) {
+                        alert('Остаток сохранен как новая заготовка!');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
